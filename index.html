@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跑步遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 9vh;
+            height: 16vh;
+            max-width: 450px;
+            max-height: 800px;
+            background: linear-gradient(180deg, #87CEEB 0%, #90EE90 100%);
+            border: 3px solid #333;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            aspect-ratio: 9 / 16;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #90EE90 100%);
+        }
+
+        #pauseOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #pauseOverlay.active {
+            display: flex;
+        }
+
+        .popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 1001;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            min-width: 80%;
+        }
+
+        .popup.show {
+            display: block;
+            animation: popupAppear 0.3s ease-out;
+        }
+
+        @keyframes popupAppear {
+            from {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .popup p {
+            color: #666;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .popup .score {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .popup .time {
+            color: #4ecdc4;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .popup button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .popup button:active {
+            transform: scale(0.95);
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .ui-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 480px) {
+            #gameContainer {
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+        }
+
+        /* Touch feedback */
+        #gameContainer {
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui">
+            <div class="ui-item">分數: <span id="score">0</span></div>
+            <div class="ui-item">時間: <span id="time">0.0</span>s</div>
+        </div>
+        <div id="pauseOverlay">
+            <div style="color: white; font-size: 24px;">遊戲已暫停</div>
+            <button onclick="resumeGame()" style="width: 120px;">繼續</button>
+        </div>
+        <div id="gameOverPopup" class="popup">
+            <h2>🎮 遊戲結束！</h2>
+            <p>最終分數</p>
+            <div class="score" id="finalScore">0</div>
+            <p>遊戲時間</p>
+            <div class="time" id="finalTime">0.0s</div>
+            <button onclick="restartGame()">重新開始</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 設置 canvas 大小
+        function resizeCanvas() {
+            const container = document.getElementById('gameContainer');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 遊戲狀態
+        let gameState = {
+            isRunning: false,
+            isPaused: false,
+            score: 0,
+            time: 0,
+            speed: 4,
+            maxSpeed: 10,
+            speedIncrement: 0.0015,
+        };
+
+        // 玩家物件
+        const player = {
+            x: canvas.width * 0.15,
+            y: canvas.height * 0.7,
+            width: canvas.width * 0.08,
+            height: canvas.width * 0.12,
+            velocityY: 0,
+            isJumping: false,
+            jumpPower: 12,
+            gravity: 0.5,
+            groundY: canvas.height * 0.7,
+            isRunning: true,
+        };
+
+        // 障礙和道具陣列
+        let obstacles = [];
+        let powerUps = [];
+
+        // 觸摸控制
+        let touchStartTime = 0;
+        let isPressed = false;
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (gameState.isRunning && !gameState.isPaused) {
+                touchStartTime = Date.now();
+                isPressed = true;
+                performJump();
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            isPressed = false;
+        });
+
+        // 鍵盤控制
+        document.addEventListener('keydown', (e) => {
+            if (gameState.isRunning && !gameState.isPaused) {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    performJump();
+                }
+            }
+            if (e.code === 'KeyP') {
+                togglePause();
+            }
+        });
+
+        function performJump() {
+            if (!player.isJumping) {
+                player.velocityY = -player.jumpPower;
+                player.isJumping = true;
+            }
+        }
+
+        function togglePause() {
+            if (!gameState.isRunning) return;
+            gameState.isPaused = !gameState.isPaused;
+            document.getElementById('pauseOverlay').classList.toggle('active');
+        }
+
+        function resumeGame() {
+            gameState.isPaused = false;
+            document.getElementById('pauseOverlay').classList.remove('active');
+        }
+
+        // 創建障礙
+        function createObstacle() {
+            const obstacleTypes = ['🍉', '🍇'];
+            const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+            const obstacle = {
+                x: canvas.width,
+                y: canvas.height * 0.7,
+                width: canvas.width * 0.06,
+                height: canvas.width * 0.08,
+                type: type,
+                passed: false,
+            };
+            obstacles.push(obstacle);
+        }
+
+        // 創建道具
+        function createPowerUp() {
+            const powerUpTypes = ['⭐', '💎', '🌟'];
+            const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            const powerUp = {
+                x: canvas.width,
+                y: Math.random() * (canvas.height * 0.5) + canvas.height * 0.2,
+                width: canvas.width * 0.05,
+                height: canvas.width * 0.05,
+                type: type,
+                collected: false,
+            };
+            powerUps.push(powerUp);
+        }
+
+        // 檢測碰撞
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        // 遊戲結束
+        function endGame() {
+            gameState.isRunning = false;
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalTime').textContent = gameState.time.toFixed(1) + 's';
+            document.getElementById('gameOverPopup').classList.add('show');
+        }
+
+        // 重新開始遊戲
+        function restartGame() {
+            gameState = {
+                isRunning: true,
+                isPaused: false,
+                score: 0,
+                time: 0,
+                speed: 4,
+                maxSpeed: 10,
+                speedIncrement: 0.0015,
+            };
+            obstacles = [];
+            powerUps = [];
+            player.velocityY = 0;
+            player.isJumping = false;
+            player.y = player.groundY;
+            document.getElementById('gameOverPopup').classList.remove('show');
+            document.getElementById('score').textContent = '0';
+            document.getElementById('time').textContent = '0.0';
+            gameLoop();
+        }
+
+        // 主遊戲循環
+        function gameLoop() {
+            // 清除畫布
+            ctx.fillStyle = 'rgba(135, 206, 235, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (gameState.isRunning && !gameState.isPaused) {
+                // 更新時間
+                gameState.time += 0.016; // 假設 60fps
+
+                // 增加速度
+                if (gameState.speed < gameState.maxSpeed) {
+                    gameState.speed += gameState.speedIncrement;
+                }
+
+                // 更新玩家位置
+                player.velocityY += player.gravity;
+                player.y += player.velocityY;
+
+                // 檢測地面碰撞
+                if (player.y >= player.groundY) {
+                    player.y = player.groundY;
+                    player.velocityY = 0;
+                    player.isJumping = false;
+                }
+
+                // 移動障礙
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    obstacles[i].x -= gameState.speed;
+
+                    // 檢測是否超出螢幕
+                    if (obstacles[i].x + obstacles[i].width < 0) {
+                        obstacles.splice(i, 1);
+                    } else {
+                        // 檢測玩家碰撞
+                        if (checkCollision(player, obstacles[i])) {
+                            endGame();
+                            return;
+                        }
+
+                        // 加分（通過障礙）
+                        if (!obstacles[i].passed && obstacles[i].x < player.x) {
+                            obstacles[i].passed = true;
+                            gameState.score += 10;
+                            document.getElementById('score').textContent = gameState.score;
+                        }
+                    }
+                }
+
+                // 移動道具
+                for (let i = powerUps.length - 1; i >= 0; i--) {
+                    powerUps[i].x -= gameState.speed;
+                    powerUps[i].y += Math.sin(gameState.time * 0.05 + i) * 0.5;
+
+                    // 檢測是否超出螢幕
+                    if (powerUps[i].x + powerUps[i].width < 0) {
+                        powerUps.splice(i, 1);
+                    } else {
+                        // 檢測玩家碰撞
+                        if (checkCollision(player, powerUps[i])) {
+                            powerUps.splice(i, 1);
+                            gameState.score += 25;
+                            document.getElementById('score').textContent = gameState.score;
+                        }
+                    }
+                }
+
+                // 生成障礙（根據速度動態調整）
+                if (Math.random() < 0.01 + (gameState.speed - 4) * 0.002) {
+                    createObstacle();
+                }
+
+                // 生成道具
+                if (Math.random() < 0.002) {
+                    createPowerUp();
+                }
+
+                // 更新 UI
+                document.getElementById('time').textContent = gameState.time.toFixed(1);
+            }
+
+            // 繪製玩家
+            ctx.fillStyle = '#FF6B6B';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            ctx.font = (player.width * 0.8) + 'px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🏃', player.x + player.width / 2, player.y + player.height / 2);
+
+            // 繪製障礙
+            obstacles.forEach(obstacle => {
+                ctx.font = (obstacle.width * 1.2) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(obstacle.type, obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
+            });
+
+            // 繪製道具
+            powerUps.forEach(powerUp => {
+                ctx.font = (powerUp.width * 1.5) + 'px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(powerUp.type, powerUp.x + powerUp.width / 2, powerUp.y + powerUp.height / 2);
+            });
+
+            // 繪製地面
+            ctx.strokeStyle = '#90EE90';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, player.groundY + player.height);
+            ctx.lineTo(canvas.width, player.groundY + player.height);
+            ctx.stroke();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 開始遊戲
+        gameState.isRunning = true;
+        gameLoop();
+
+        // 提示信息
+        console.log('%c跑步遊戲', 'color: #667eea; font-size: 20px; font-weight: bold;');
+        console.log('%c操作方法：長按或點擊跳躍 | 鍵盤按 Space 或 ↑ 跳躍 | 按 P 暫停', 'color: #666; font-size: 14px;');
+    </script>
+</body>
+</html>
