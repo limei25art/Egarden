@@ -3,17 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小蒼的無盡冒險 - Sora Run</title>
+    <title>小蒼的無盡冒險 - Sora Run (新擬物 UI)</title>
     <style>
+        /* ==================== 新擬物風格顏色變數 ==================== */
+        :root {
+            --bg-color: #E0E5EC;
+            --text-main: #5A6C7D;
+            --text-highlight: #4CAF50;
+            --text-warning: #FF9800;
+            --text-danger: #E65100;
+            
+            /* 凸起陰影 (外凸) */
+            --shadow-flat: 
+                -5px -5px 10px rgba(255, 255, 255, 0.8),
+                 5px  5px 10px rgba(0, 0, 0, 0.1);
+                 
+            /* 凹陷陰影 (內凹) */
+            --shadow-inset: 
+                inset  2px  2px 5px rgba(0, 0, 0, 0.1),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+                
+            /* 文字微凸起效果 */
+            --text-shadow-neo: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: #1a1a1a; 
+            /* 背景改為新擬物的底色，為了讓陰影效果明顯 */
+            background: var(--bg-color); 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex; justify-content: center; align-items: center; overflow: hidden;
             touch-action: none;
             user-select: none;
+            color: var(--text-main);
         }
 
+        /* 遊戲容器本身保留原本風格 (因為裡面有畫布)，但外框加上新擬物特徵 */
         #game-container {
             position: relative;
             background: linear-gradient(to bottom, #fca34d, #fcd394);
@@ -21,9 +46,12 @@
             height: calc(100vw * 16 / 9);
             max-height: 100vh;
             max-width: calc(100vh * 9 / 16);
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            /* 調整容器外框陰影，配合整體風格 */
+            box-shadow: var(--shadow-flat);
             overflow: hidden;
-            border-radius: 12px;
+            border-radius: 20px;
+            /* 給容器加一個不明顯的邊框增加質感 */
+            border: 2px solid rgba(255,255,255,0.2); 
         }
 
         canvas { 
@@ -33,57 +61,182 @@
             image-rendering: pixelated;
         }
 
+        /* 頂部 UI 稍微調整文字陰影以適應遊戲背景 */
         #ui {
             position: absolute; top: 15px; left: 15px; right: 15px;
             display: flex; justify-content: space-between;
             font-size: 20px; font-weight: bold; color: #fff; 
-            text-shadow: 2px 2px 0px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
             pointer-events: none;
             z-index: 10;
         }
 
+        /* ==================== 結算 Popup (新擬物化) ==================== */
         #popup {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75);
+            /* 背景調淡，不要太黑，讓新擬物的光影透出來 */
+            background: rgba(224, 229, 236, 0.85);
             display: none; justify-content: center; align-items: center; flex-direction: column;
-            z-index: 20; backdrop-filter: blur(4px);
+            z-index: 20; backdrop-filter: blur(8px);
         }
 
         .popup-content {
-            background: #fff; padding: 30px; border-radius: 16px;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            width: 80%; max-width: 320px;
-            border: 4px solid #FF9800;
-            animation: bounceIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--bg-color);
+            padding: 30px 25px; 
+            border-radius: 20px; /* 大圓角 */
+            text-align: center; 
+            width: 85%; max-width: 340px;
+            box-sizing: border-box;
+            
+            /* 新擬物核心：無明顯邊框，靠雙陰影塑造形狀 */
+            border: none;
+            box-shadow: var(--shadow-flat);
+            animation: neoBounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes bounceIn {
-            from { transform: scale(0.3); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        @keyframes neoBounceIn {
+            from { transform: scale(0.8) translateY(20px); opacity: 0; box-shadow: none; }
+            to { transform: scale(1) translateY(0); opacity: 1; box-shadow: var(--shadow-flat); }
         }
 
-        h2 { margin-top: 0; color: #E65100; font-size: 28px; }
-        p { font-size: 18px; margin: 12px 0; color: #444; }
-        .highlight { color: #FF9800; font-weight: bold; font-size: 24px; }
+        h2 { 
+            margin-top: 0; 
+            color: var(--text-main); 
+            font-size: 26px; 
+            margin-bottom: 15px; 
+            text-shadow: var(--text-shadow-neo);
+            font-weight: 600;
+        }
+        
+        p { 
+            font-size: 16px; 
+            margin: 10px 0; 
+            color: var(--text-main);
+            text-shadow: var(--text-shadow-neo);
+        }
+
+        .highlight { 
+            color: var(--text-warning); 
+            font-weight: bold; 
+            font-size: 22px; 
+        }
+        
+        #result-tier-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-danger);
+            margin: 15px 0 10px 0;
+            text-shadow: var(--text-shadow-neo);
+        }
+
+        /* 圖片外框改為凹陷效果 */
+        #result-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%; /* 圓形圖片更適合新擬物 */
+            border: 4px solid var(--bg-color); /* 邊框與背景同色 */
+            margin: 10px auto;
+            display: block;
+            background: var(--bg-color);
+            /* 使用內凹陰影 */
+            box-shadow: var(--shadow-inset);
+            padding: 5px; /* 留出內凹空間 */
+        }
         
         #ai-comment {
-            font-style: italic;
-            color: #555;
+            font-style: normal;
+            color: #7A8C9D; /* 稍微淺一點的文字 */
             margin-top: 15px;
-            min-height: 40px;
+            min-height: 35px;
+            font-size: 14px;
+            /* 給評論區塊一個微微凹陷的底框 */
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-inset);
+            background: rgba(255,255,255,0.1);
         }
 
+        /* ==================== 按鈕 (新擬物化) ==================== */
         .btn-restart {
-            margin-top: 15px; padding: 12px 30px; font-size: 18px; font-weight: bold;
-            border: none; border-radius: 30px; background: #4CAF50; color: white;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+            margin-top: 20px; 
+            padding: 12px 35px; 
+            font-size: 18px; 
+            font-weight: bold;
+            color: var(--text-main);
+            background: var(--bg-color); /* 與背景同色 */
+            border: none; 
+            border-radius: 30px; 
+            cursor: pointer; 
+            
+            /* 預設為凸起 */
+            box-shadow: var(--shadow-flat);
+            text-shadow: var(--text-shadow-neo);
+            transition: all 0.2s ease;
+            outline: none;
         }
-        .btn-restart:active { transform: scale(0.95); }
+
+        .btn-restart:hover {
+            /* 懸停時顏色微調 */
+            color: var(--text-highlight);
+        }
+
+        .btn-restart:active {
+            /* 按下時切換為凹陷效果 */
+            transform: scale(0.98);
+            box-shadow: var(--shadow-inset);
+            color: var(--text-main);
+        }
+        /* ======================================================== */
 
         #start-prompt {
             position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
             font-size: 22px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
             text-align: center; pointer-events: none; z-index: 10;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-2px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-anim {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        .score-popup {
+            position: absolute;
+            color: #FFD700;
+            font-size: 28px;
+            font-weight: 900;
+            text-shadow: 2px 2px 0px #b8860b, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000;
+            pointer-events: none;
+            z-index: 15;
+            transform: translate(-50%, -50%);
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { margin-top: 0; opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            20% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { margin-top: -80px; opacity: 0; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes popScore {
+            0% { transform: scale(1); color: #fff; }
+            50% { transform: scale(1.6); color: #FFD700; }
+            100% { transform: scale(1); color: #fff; }
+        }
+        .pop-anim {
+            display: inline-block;
+            animation: popScore 0.3s ease-out;
         }
     </style>
 </head>
@@ -91,12 +244,13 @@
 
 <div id="game-container">
     <div id="ui">
-        <div>🪙 GOLD: <span id="score">0</span></div>
+        <div>🪙 GOLD: <span id="score" style="display:inline-block; transition: all 0.1s;">0</span></div>
         <div>⏱️ TIME: <span id="timer">0.0</span>s</div>
     </div>
     
     <div id="start-prompt">
-        <div>點擊螢幕 跳躍</div>
+        <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #b8860b; margin-bottom: 20px;">Sora Run</div>
+        <div>點擊螢幕 開始冒險</div>
         <div style="font-size: 14px; margin-top: 8px; color: #ffe0b2;">長按可跳得更高！</div>
     </div>
 
@@ -104,7 +258,10 @@
     
     <div id="popup">
         <div class="popup-content">
-            <h2>冒險結束</h2>
+            <h2>冒險結果</h2>
+            <img id="result-img" src="" alt="冒險結果">
+            <div id="result-tier-title">🔹 稱號載入中 🔹</div>
+            
             <p>收集金幣：<span id="finalScore" class="highlight">0</span></p>
             <p>奔跑時間：<span id="finalTime" class="highlight">0</span> 秒</p>
             <p id="ai-comment">✨ 正在請 AI 評價你的表現...</p>
@@ -116,6 +273,7 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const gameContainer = document.getElementById('game-container');
     const scoreEl = document.getElementById('score');
     const timerEl = document.getElementById('timer');
     const popup = document.getElementById('popup');
@@ -132,7 +290,6 @@
     const GROUND_Y = HEIGHT - GROUND_H;
     const HITBOX_SHRINK = 10;
 
-    // 遊戲變數
     let gameState = 'ready';
     let score = 0;
     let startTime = 0;
@@ -145,12 +302,11 @@
     let coins = [];
     let particles = [];
     
-    // 內部圖片資源（請替換成你自己的圖片網址）
-    let playerSheet = new Image();    // 主角精靈表
-    let bgImage = new Image();        // 背景圖
-    let obstacleImg = new Image();    // 障礙物
-    let coinImg = new Image();        // 金幣
-    let groundTile = new Image();     // 地面紋理
+    let playerSheet = new Image();
+    let bgImage = new Image();
+    let obstacleImg = new Image();
+    let coinImg = new Image();
+    let groundTile = new Image();
 
     let imagesLoaded = 0;
     const totalImages = 5;
@@ -159,16 +315,17 @@
         imagesLoaded++;
         if (imagesLoaded === totalImages) {
             console.log("✅ 所有遊戲圖片載入完成");
+            if (gameState === 'ready') {
+                renderScene(); 
+            }
         }
     }
 
-    // ==================== 修改這裡 ====================
-    playerSheet.src = "assets/sora_spritesheet.png";   // 推薦 1200x800
-    bgImage.src = "assets/Background.png";           // 推薦 1440x800
-    obstacleImg.src = "assets/obstacle.png";       // 推薦 120x160
-    coinImg.src = "assets/coin.png";             // 推薦 80x80
-    groundTile.src = "assets/Ground_Tile.png";      // 推薦 120x180
-    // ================================================
+    playerSheet.src = "assets/sora_spritesheet.png";   
+    bgImage.src = "assets/Background.png";           
+    obstacleImg.src = "assets/obstacle.png";       
+    coinImg.src = "assets/coin.png";             
+    groundTile.src = "assets/Ground_Tile.png";      
 
     playerSheet.onload = checkAllLoaded;
     bgImage.onload = checkAllLoaded;
@@ -176,7 +333,16 @@
     coinImg.onload = checkAllLoaded;
     groundTile.onload = checkAllLoaded;
 
-    // 角色
+    const resultTiers = [
+        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "居然一個金幣都沒拿到，小蒼在風中凌亂了..." },
+        { min: 1, max: 5, title: "🥉 初試身手 🥉", img: "assets/result_1.png", comment: "小有收穫！繼續熟悉跳躍節奏，下次會更好！" },
+        { min: 6, max: 15, title: "🥈 尋寶能手 🥈", img: "assets/result_2.png", comment: "身手相當敏捷，輕輕鬆鬆把金幣收入囊中！" },
+        { min: 16, max: 30, title: "🥇 金幣收割者 🥇", img: "assets/result_3.png", comment: "太厲害了！場上的金幣幾乎被你一掃而空！" },
+        { min: 31, max: 50, title: "💎 大富大貴 💎", img: "assets/result_4.png", comment: "財源滾滾！小蒼這波冒險直接原地財富自由！" },
+        { min: 51, max: 99, title: "👑 富可敵國 👑", img: "assets/result_5.png", comment: "神級操作！滿屏的金幣都在為你的技術起舞！" },
+        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "不可思議！你打破了小蒼冒險的最高財富紀錄！" }
+    ];
+
     const player = {
         x: 100,
         y: GROUND_Y,
@@ -230,7 +396,6 @@
 
         draw: function() {
             if (!playerSheet.complete) {
-                // 備用顯示
                 ctx.save();
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#FF9800';
@@ -243,7 +408,6 @@
             }
 
             let sx = 0, sy = 0, sw = 90, sh = 175;
-
             if (this.state === 'RUN') {
                 const runFramesX = [148, 260, 368, 478, 595, 715, 830, 935];
                 sx = runFramesX[this.animFrame];
@@ -257,12 +421,10 @@
             } else {
                 sx = 48; sy = 196;
             }
-
             ctx.drawImage(playerSheet, sx, sy, sw, sh, this.x, this.y - this.height, this.width, this.height);
         }
     };
 
-    // 背景星星
     class StarBg {
         constructor() {
             this.x = Math.random() * WIDTH;
@@ -276,10 +438,8 @@
             ctx.fillRect(this.x, this.y, this.size, this.size);
         }
     }
+    let bgStars = Array.from({length: 40}, () => new StarBg());
 
-    bgStars = Array.from({length: 40}, () => new StarBg());
-
-    // 輸入控制
     let isPressing = false;
 
     function pressStart(e) {
@@ -314,7 +474,6 @@
     canvas.addEventListener('mousedown', pressStart);
     canvas.addEventListener('mouseup', pressEnd);
 
-    // 物件類別
     class Obstacle {
         constructor() {
             this.width = 80;
@@ -372,10 +531,8 @@
             this.decay = Math.random() * 0.03 + 0.02;
         }
         update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vy += 0.2;
-            this.life -= this.decay;
+            this.x += this.vx; this.y += this.vy;
+            this.vy += 0.2; this.life -= this.decay;
         }
         draw() {
             ctx.fillStyle = this.color;
@@ -387,7 +544,26 @@
         }
     }
 
-    // 遊戲主循環
+    function triggerCSSScorePopup(canvasX, canvasY) {
+        const scaleX = gameContainer.clientWidth / WIDTH;
+        const scaleY = gameContainer.clientHeight / HEIGHT;
+
+        const floatEl = document.createElement('div');
+        floatEl.className = 'score-popup';
+        floatEl.innerText = '+1';
+        
+        floatEl.style.left = (canvasX * scaleX) + 'px';
+        floatEl.style.top = (canvasY * scaleY) + 'px';
+        
+        gameContainer.appendChild(floatEl);
+
+        scoreEl.classList.remove('pop-anim');
+        void scoreEl.offsetWidth; 
+        scoreEl.classList.add('pop-anim');
+
+        setTimeout(() => floatEl.remove(), 800);
+    }
+
     function gameLoop() {
         if (gameState !== 'playing') return;
 
@@ -399,14 +575,12 @@
         bgStars.forEach(star => star.update());
         player.update();
 
-        // 生成障礙物與金幣
         let spawnInterval = Math.max(65, 120 - Math.floor(gameSpeed * 2.5));
         if (frames % spawnInterval === 0) {
             obstacles.push(new Obstacle());
             if (Math.random() < 0.7) coins.push(new Coin());
         }
 
-        // 更新與碰撞
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i];
             obs.update();
@@ -426,9 +600,13 @@
                 player.x + player.width > coin.x - coin.size &&
                 player.y - player.height < coin.y + coin.size &&
                 player.y > coin.y - coin.size) {
+                
                 score += 1;
                 scoreEl.innerText = score;
-                for (let p = 0; p < 8; p++) particles.push(new Particle(coin.x, coin.y, '#FFD700'));
+                
+                triggerCSSScorePopup(coin.x, coin.y);
+                
+                for (let p = 0; p < 4; p++) particles.push(new Particle(coin.x, coin.y, '#FFD700'));
                 coins.splice(i, 1);
             } else if (coin.x + coin.size < 0) {
                 coins.splice(i, 1);
@@ -447,14 +625,12 @@
     function renderScene() {
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-        // 背景
         if (bgImage.complete) {
             ctx.drawImage(bgImage, 0, 0, WIDTH, HEIGHT - GROUND_H + 50);
         }
 
         bgStars.forEach(star => star.draw());
 
-        // 地面
         if (groundTile.complete) {
             let offset = (frames * gameSpeed) % 120;
             for (let i = -120; i < WIDTH + 240; i += 120) {
@@ -473,6 +649,21 @@
 
     function triggerGameOver() {
         gameState = 'gameover';
+        
+        gameContainer.classList.add('shake-anim');
+        setTimeout(() => gameContainer.classList.remove('shake-anim'), 400);
+
+        let matchedTier = resultTiers[0];
+        for (const tier of resultTiers) {
+            if (score >= tier.min && score <= tier.max) {
+                matchedTier = tier;
+                break;
+            }
+        }
+
+        document.getElementById('result-tier-title').innerText = matchedTier.title;
+        document.getElementById('result-img').src = matchedTier.img;
+
         document.getElementById('finalScore').innerText = score;
         document.getElementById('finalTime').innerText = gameTime.toFixed(1);
         popup.style.display = 'flex';
@@ -481,13 +672,8 @@
             particles.push(new Particle(player.x + player.width/2, player.y - player.height/2, '#FF5722'));
         }
         renderScene();
-        generateAIComment(score, gameTime.toFixed(1));
-    }
-
-    async function generateAIComment(finalScore, finalTime) {
-        aiCommentEl.innerText = "✨ AI 正在思考評語...";
-        // Gemini API 部分保留原樣（若不需要可移除）
-        aiCommentEl.innerText = `✨ 你堅持了 ${finalTime} 秒，收集了 ${finalScore} 枚金幣！下次再挑戰看看！`;
+        
+        aiCommentEl.innerText = `✨ ${matchedTier.comment}`;
     }
 
     function resetGame() {
@@ -500,13 +686,14 @@
         particles = [];
         score = 0;
         scoreEl.innerText = '0';
+        frames = 0;
         gameState = 'ready';
         startPrompt.style.display = 'block';
+        renderScene();
     }
 
     btnRestart.addEventListener('click', resetGame);
 
-    // 初始渲染
     renderScene();
 </script>
 </body>
