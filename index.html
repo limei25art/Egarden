@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小蒼的無盡冒險 - Sora Run (5層視差 & 多樣障礙)</title>
+    <title>小蒼的無盡冒險 - Sora Run (極限難度版)</title>
     <style>
         /* ==================== 新擬物風格顏色變數 ==================== */
         :root {
@@ -148,7 +148,7 @@
     <div id="start-prompt">
         <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #b8860b; margin-bottom: 20px;">Sora Run</div>
         <div>點擊螢幕 開始冒險</div>
-        <div style="font-size: 14px; margin-top: 8px; color: #ffe0b2;">長按可跳得更高！</div>
+        <div style="font-size: 14px; margin-top: 8px; color: #ffe0b2;">短按=小跳 | 長按=大跳！</div>
     </div>
 
     <canvas id="bgCanvas" style="z-index: 1; pointer-events: none;"></canvas>
@@ -219,14 +219,13 @@
     let layer1Img = new Image(); 
     let layer2Img = new Image(); 
     let layer3Img = new Image(); 
-    let layer4Img = new Image(); // 地表 (支援 140x180 或任意尺寸)
-    let layer5Img = new Image(); // 花草 (支援 1440x150 或任意尺寸)
+    let layer4Img = new Image(); 
+    let layer5Img = new Image(); 
 
-    // 新增 3 款障礙物圖片陣列
     let obstacleImgs = [new Image(), new Image(), new Image()];
 
     let imagesLoaded = 0;
-    const totalImages = 10; // 玩家1 + 硬幣1 + 背景5 + 障礙物3 = 10
+    const totalImages = 10; 
 
     function checkAllLoaded() {
         imagesLoaded++;
@@ -238,8 +237,6 @@
 
     playerSheet.src = "assets/sora_spritesheet.png";   
     coinImg.src = "assets/coin.png";             
-
-    // 請確保你有這三張圖片，如果沒有請複製原本的 obstacle.png 重新命名填補
     obstacleImgs[0].src = "assets/obstacle_1.png"; 
     obstacleImgs[1].src = "assets/obstacle_2.png"; 
     obstacleImgs[2].src = "assets/obstacle_3.png"; 
@@ -270,16 +267,28 @@
         { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "不可思議！你打破了小蒼冒險的最高財富紀錄！" }
     ];
 
+    let isPressing = false;
+
+    // ================= 核心重構：瑪利歐式物理跳躍 =================
     const player = {
-        x: 100, y: GROUND_Y, width: 100, height: 160, vy: 0, gravity: 1.1,
-        jumpPower: -23, isJumping: false, jumpHoldTimer: 0, maxJumpHold: 12,
+        x: 100, y: GROUND_Y, width: 100, height: 160, 
+        vy: 0, 
+        gravity: 1.3,      // 加重基礎下墜感，讓操作更紮實
+        jumpPower: -26,    // 賦予極大初始爆發力 (確保長跳能跳很高)
+        isJumping: false, 
         animFrame: 0, animTimer: 0, state: 'RUN',
 
         update: function() {
-            if (isPressing && this.jumpHoldTimer > 0) {
-                this.vy -= 0.8; this.jumpHoldTimer--;
+            // 基礎重力
+            this.vy += this.gravity;
+            
+            // 🔥 短跳核心邏輯：如果玩家鬆開手指，而且角色還在往上飛 (vy < 0)
+            // 就強行增加額外的下墜重力，瞬間「中斷」跳躍高度！
+            if (!isPressing && this.vy < -5) {
+                this.vy += 2.8; // 施加巨大重力差，製造「短跳」效果
             }
-            this.vy += this.gravity; this.y += this.vy;
+
+            this.y += this.vy;
 
             if (this.y >= GROUND_Y) {
                 this.y = GROUND_Y; this.vy = 0;
@@ -336,7 +345,6 @@
     }
     let bgStars = Array.from({length: 40}, () => new StarBg());
 
-    let isPressing = false;
     function pressStart(e) {
         if (e.target.closest('#footer') || e.target.closest('#popup')) return;
         if (e.type === 'touchstart') e.preventDefault();
@@ -349,27 +357,38 @@
         if (gameState === 'playing') {
             isPressing = true;
             if (!player.isJumping) {
-                player.isJumping = true; player.vy = player.jumpPower;
-                player.jumpHoldTimer = player.maxJumpHold;
+                player.isJumping = true; 
+                player.vy = player.jumpPower; // 瞬間給予爆發力
             }
         }
     }
     function pressEnd(e) {
         if (e.target.closest('#footer') || e.target.closest('#popup')) return;
         if (e.type === 'touchend') e.preventDefault();
-        isPressing = false; player.jumpHoldTimer = 0;
+        isPressing = false; // 鬆開手指，觸發 update 裡的重力中斷
     }
     gameContainer.addEventListener('touchstart', pressStart, {passive: false});
     gameContainer.addEventListener('touchend', pressEnd, {passive: false});
     gameContainer.addEventListener('mousedown', pressStart);
     gameContainer.addEventListener('mouseup', pressEnd);
 
+    // ================= 障礙物：隨時間變得越來越高低起伏 =================
     class Obstacle {
         constructor() {
-            // 隨機抽選 0, 1, 2 三款其中之一
             this.imgType = Math.floor(Math.random() * 3);
             this.width = 80; this.height = 100;
-            this.x = WIDTH + 100; this.y = GROUND_Y;
+            this.x = WIDTH + 100; 
+            this.y = GROUND_Y;
+            
+            // 遊戲時間越長，障礙物最高能浮空的極限越大 (最多升高 150px)
+            let maxElevation = Math.min((gameTime / 10) * 25, 150); 
+            
+            // 生存 5 秒後，障礙物有 40% ~ 70% 的機率浮空！
+            if (gameTime > 5 && Math.random() < 0.4 + (gameTime * 0.005)) {
+                // 有些障礙物會飛得剛好在你頭上，你必須用「短跳」從下面鑽過去
+                // 有些會剛好卡在半腰，逼你必須用「極限長跳」跨過去
+                this.y -= Math.random() * maxElevation;
+            }
         }
         update() { this.x -= gameSpeed; }
         draw() {
@@ -433,51 +452,51 @@
         frames++;
         gameTime = (Date.now() - startTime) / 1000;
         timerEl.innerText = gameTime.toFixed(1);
-        gameSpeed = Math.min(baseSpeed + (gameTime / 8) * 1.2, 18);
+        gameSpeed = Math.min(baseSpeed + (gameTime / 8) * 1.2, 19); // 加快極限速度
 
         bgStars.forEach(star => star.update());
         player.update();
 
-        // 障礙物生成
-        let spawnInterval = Math.max(65, 120 - Math.floor(gameSpeed * 2.5));
+        let spawnInterval = Math.max(55, 120 - Math.floor(gameSpeed * 2.8));
         if (frames % spawnInterval === 0) {
             obstacles.push(new Obstacle());
             
-            // ================= 新增：多樣化金幣陣型系統 =================
-            // 85% 機率會伴隨障礙物產出金幣群
+            // 金幣陣型難度隨機生成
             if (Math.random() < 0.85) {
-                // 決定金幣陣型 (0~3)
                 let pattern = Math.floor(Math.random() * 4); 
-                // 決定出現高度 (擴增最高點到跳躍極限)
-                let heights = [GROUND_Y - 80, GROUND_Y - 180, GROUND_Y - 280, GROUND_Y - 360];
-                let baseY = heights[Math.floor(Math.random() * heights.length)];
                 
-                // 起始 X 座標，跟隨障礙物後方一段距離
+                // 基礎高度池
+                let heights = [GROUND_Y - 80, GROUND_Y - 180, GROUND_Y - 260];
+                
+                // 💥 遊戲超過 15 秒後，解鎖超高空金幣 (需要極限長按才能碰到)
+                if (gameTime > 15) {
+                    heights.push(GROUND_Y - 350); 
+                }
+
+                let baseY = heights[Math.floor(Math.random() * heights.length)];
                 let startX = WIDTH + 180 + (Math.random() * 100); 
 
                 if (pattern === 0) {
-                    // 單獨兩顆
                     coins.push(new Coin(startX, baseY));
                     coins.push(new Coin(startX + 60, baseY));
                 } else if (pattern === 1) {
-                    // 直線 4 連擊
                     for (let k = 0; k < 4; k++) coins.push(new Coin(startX + k * 55, baseY));
                 } else if (pattern === 2) {
-                    // 圓弧跳躍陣型 (5顆)
                     for (let k = 0; k < 5; k++) {
                         let arcY = baseY - Math.sin((k / 4) * Math.PI) * 120;
                         coins.push(new Coin(startX + k * 50, arcY));
                     }
                 } else {
-                    // 鋸齒波浪陣型 (4顆)
-                    for (let k = 0; k < 4; k++) {
-                        coins.push(new Coin(startX + k * 50, baseY + (k % 2 === 0 ? 0 : -80)));
+                    // 💥 遊戲超過 20 秒，波浪起伏變得超大，逼迫玩家連續進行短跳+長跳
+                    let waveAmp = gameTime > 20 ? 150 : 80;
+                    for (let k = 0; k < 5; k++) {
+                        coins.push(new Coin(startX + k * 55, baseY + (k % 2 === 0 ? 0 : -waveAmp)));
                     }
                 }
             }
-            // =========================================================
         }
 
+        // 碰撞偵測
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i]; obs.update();
             if (player.x + HITBOX_SHRINK < obs.x + obs.width - 10 &&
@@ -506,36 +525,26 @@
         renderScene(); requestAnimationFrame(gameLoop);
     }
 
-    // ================= 強化版：自動適應圖片寬度的視差渲染 =================
     function drawParallaxLayer(targetCtx, img, speedMult, yPos, height) {
         if (!img.complete || img.width === 0) return;
-        // 自動讀取該圖片的真實寬度 (例如 Layer4 = 140, Layer5 = 1440)
         let imgW = img.width; 
         let offset = (frames * gameSpeed * speedMult) % imgW;
-        
-        // 迴圈繪製：確保不管圖片多小或多寬，都能完全覆蓋整個螢幕寬度 (WIDTH)
         for (let i = -offset; i < WIDTH + imgW; i += imgW) {
             targetCtx.drawImage(img, i, yPos, imgW, height);
         }
     }
-    // ====================================================================
 
     function renderScene() {
         bgCtx.clearRect(0, 0, WIDTH, HEIGHT);
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-        // 1. 最遠景 ( bgCanvas )
         if (layer1Img.complete) drawParallaxLayer(bgCtx, layer1Img, 0.1, 0, HEIGHT - GROUND_H + 50);
         else { bgCtx.fillStyle = '#87CEEB'; bgCtx.fillRect(0, 0, WIDTH, HEIGHT); }
         bgStars.forEach(star => star.draw(bgCtx));
 
-        // 2. 遠景 ( gameCanvas )
         drawParallaxLayer(ctx, layer2Img, 0.3, 0, HEIGHT - GROUND_H + 50);
-
-        // 3. 近景 
         drawParallaxLayer(ctx, layer3Img, 0.6, 0, HEIGHT - GROUND_H + 50);
 
-        // 4. 實體表面 (地面 Layer4) -> 現在會自動適應你放的 140x180 圖片了！
         if (layer4Img.complete && layer4Img.width > 0) {
             drawParallaxLayer(ctx, layer4Img, 1.0, GROUND_Y, GROUND_H);
         } else {
@@ -547,7 +556,6 @@
         player.draw();
         particles.forEach(p => p.draw());
 
-        // 5. 最前景 (Layer5) -> 現在會自動適應你放的 1440x150 圖片了！
         if (layer5Img.complete && layer5Img.width > 0) {
             let fgHeight = 150; 
             drawParallaxLayer(ctx, layer5Img, 1.3, HEIGHT - fgHeight, fgHeight);
