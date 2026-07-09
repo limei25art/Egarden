@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小蒼的無盡冒險 - Sora Run (極限難度版)</title>
+    <title>E Garden</title>
     <style>
         /* ==================== 新擬物風格顏色變數 ==================== */
         :root {
@@ -45,9 +45,10 @@
         #footer a { text-decoration: none; transition: opacity 0.2s; }
         #footer a:hover { opacity: 0.7; }
 
-        #game-container {
+       #game-container {
             position: relative;
-            background: linear-gradient(to bottom, #fca34d, #fcd394);
+            /* 已修改為淺藍色漸變 */
+            background: linear-gradient(to bottom, #4ea9ed, #78c4fd);
             width: 100vw; height: calc(100vw * 16 / 9);
             max-height: 100vh; max-width: calc(100vh * 9 / 16);
             box-shadow: var(--shadow-flat); overflow: hidden;
@@ -146,7 +147,7 @@
     </div>
     
     <div id="start-prompt">
-        <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #b8860b; margin-bottom: 20px;">Sora Run</div>
+        <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #b8860b; margin-bottom: 20px;">E Garden</div>
         <div>點擊螢幕 開始冒險</div>
         <div style="font-size: 14px; margin-top: 8px; color: #ffe0b2;">短按=小跳 | 長按=大跳！</div>
     </div>
@@ -176,10 +177,10 @@
 </div>
 
 <div id="footer">
-    ★♡ <span><a href="#home" target="_blank" style="color: #ffffff;">E Dress</a></span> |
+    <span><a href="#home" target="_blank" style="color: #ffffff;">E Garden</a></span> |
     <span><a href="https://youtube.com/@edanlui7556?si=HW7jHFwUIiw4ibNb" target="_blank" style="color: #ffffff;">E YOUTUBE</a></span> |
     <span><a href="https://www.threads.com/@edanlui" target="_blank" style="color: #ffffff;">E Threads</a></span> |
-    <span><a href="https://www.instagram.com/edanlui" target="_blank" style="color: #ffffff">E IG</a></span> ♡★
+    <span><a href="https://www.instagram.com/edanlui" target="_blank" style="color: #ffffff">E IG</a></span> 
     <h5 style="margin: 5px 0;"><a href="https://linktr.ee/li_mei25" target="_blank" style="color: #ffffff;">UNOFFICIA.FANART BY LI_MEI.ART</a></h5>
 </div>
 
@@ -257,13 +258,13 @@
     layer5Img.onload = checkAllLoaded;
 
     const resultTiers = [
-        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "居然一個金幣都沒拿到，小蒼在風中凌亂了..." },
-        { min: 1, max: 5, title: "🥉 初試身手 🥉", img: "assets/result_1.png", comment: "小有收穫！繼續熟悉跳躍節奏，下次會更好！" },
-        { min: 6, max: 15, title: "🥈 尋寶能手 🥈", img: "assets/result_2.png", comment: "身手相當敏捷，輕輕鬆鬆把金幣收入囊中！" },
-        { min: 16, max: 30, title: "🥇 金幣收割者 🥇", img: "assets/result_3.png", comment: "太厲害了！場上的金幣幾乎被你一掃而空！" },
-        { min: 31, max: 50, title: "💎 大富大貴 💎", img: "assets/result_4.png", comment: "財源滾滾！小蒼這波冒險直接原地財富自由！" },
-        { min: 51, max: 99, title: "👑 富可敵國 👑", img: "assets/result_5.png", comment: "神級操作！滿屏的金幣都在為你的技術起舞！" },
-        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "不可思議！你打破了小蒼冒險的最高財富紀錄！" }
+        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "哇！一個金幣都冇？你嚟散步定放風啊？耶耶！." },
+        { min: 1, max: 5, title: "🥉 初試身手 🥉", img: "assets/result_1.png", comment: "仆... 唔係，仆親之後仲可以翻身！加油耶耶！" },
+        { min: 6, max: 15, title: "🥈 尋寶能手 🥈", img: "assets/result_2.png", comment: "好耶耶！開始有feel喇！繼續！！" },
+        { min: 16, max: 30, title: "🥇 金幣收割者 🥇", img: "assets/result_3.png", comment: "唔錯唔錯！開始跟到我節奏咁叻仔！" },
+        { min: 31, max: 50, title: "💎 大富大貴 💎", img: "assets/result_4.png", comment: "太犀利啦大佬！你係咪偷偷練過㗎？！" },
+        { min: 51, max: 99, title: "👑 富可敵國 👑", img: "assets/result_5.png", comment: "哇！身手敏捷到我眼花耶耶！！" },
+        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "Sooo Crazyyyyy 去到E個分數，你十分之有耐性力！" }
     ];
 
     let isPressing = false;
