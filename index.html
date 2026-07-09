@@ -255,7 +255,6 @@
     layer3Img.onload = checkAllLoaded;
     layer4Img.onload = checkAllLoaded;
     layer5Img.onload = checkAllLoaded;
-    // =============================================================
 
     const resultTiers = [
         { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "居然一個金幣都沒拿到，小蒼在風中凌亂了..." },
@@ -269,23 +268,23 @@
 
     let isPressing = false;
 
-    // ================= 核心重構：瑪利歐式物理跳躍 =================
+    // ================= 角色：尺寸與 UV 切割更新 =================
     const player = {
-        x: 100, y: GROUND_Y, width: 100, height: 160, 
+        x: 100, 
+        y: GROUND_Y, 
+        width: 132,    // 💥 更新為 132
+        height: 200,   // 💥 更新為 200
         vy: 0, 
-        gravity: 1.3,      // 加重基礎下墜感，讓操作更紮實
-        jumpPower: -26,    // 賦予極大初始爆發力 (確保長跳能跳很高)
+        gravity: 1.3,      
+        jumpPower: -26,    
         isJumping: false, 
         animFrame: 0, animTimer: 0, state: 'RUN',
 
         update: function() {
-            // 基礎重力
             this.vy += this.gravity;
             
-            // 🔥 短跳核心邏輯：如果玩家鬆開手指，而且角色還在往上飛 (vy < 0)
-            // 就強行增加額外的下墜重力，瞬間「中斷」跳躍高度！
             if (!isPressing && this.vy < -5) {
-                this.vy += 2.8; // 施加巨大重力差，製造「短跳」效果
+                this.vy += 2.8; 
             }
 
             this.y += this.vy;
@@ -318,14 +317,25 @@
                 ctx.beginPath(); ctx.roundRect(this.x, this.y - this.height, this.width, this.height, 15);
                 ctx.fill(); ctx.restore(); return;
             }
-            let sx = 0, sy = 0, sw = 90, sh = 175;
+            
+            // 💥 全新網格對齊法 (寬 132, 高 200)
+            let sx = 0, sy = 0, sw = 132, sh = 200; 
+            
             if (this.state === 'RUN') {
-                const runFramesX = [148, 260, 368, 478, 595, 715, 830, 935];
-                sx = runFramesX[this.animFrame]; sy = 196;
-            } else if (this.state === 'JUMP_UP') { sx = 368; sy = 485;
-            } else if (this.state === 'FALL') { sx = 595; sy = 485;
-            } else if (this.state === 'LAND') { sx = 880; sy = 525; sh = 140;
-            } else { sx = 48; sy = 196; }
+                // 跑步動畫 8 幀：全都在第一排 (Y=0)
+                sx = this.animFrame * 132;
+                sy = 0;
+            } else if (this.state === 'JUMP_UP') {
+                sx = 0; sy = 200;
+            } else if (this.state === 'FALL') {
+                sx = 132; sy = 200;
+            } else if (this.state === 'LAND') {
+                sx = 264; sy = 200;
+            } else {
+                // 預設/Idle
+                sx = 396; sy = 200;
+            }
+            
             ctx.drawImage(playerSheet, sx, sy, sw, sh, this.x, this.y - this.height, this.width, this.height);
         }
     };
@@ -358,21 +368,20 @@
             isPressing = true;
             if (!player.isJumping) {
                 player.isJumping = true; 
-                player.vy = player.jumpPower; // 瞬間給予爆發力
+                player.vy = player.jumpPower; 
             }
         }
     }
     function pressEnd(e) {
         if (e.target.closest('#footer') || e.target.closest('#popup')) return;
         if (e.type === 'touchend') e.preventDefault();
-        isPressing = false; // 鬆開手指，觸發 update 裡的重力中斷
+        isPressing = false; 
     }
     gameContainer.addEventListener('touchstart', pressStart, {passive: false});
     gameContainer.addEventListener('touchend', pressEnd, {passive: false});
     gameContainer.addEventListener('mousedown', pressStart);
     gameContainer.addEventListener('mouseup', pressEnd);
 
-    // ================= 障礙物：隨時間變得越來越高低起伏 =================
     class Obstacle {
         constructor() {
             this.imgType = Math.floor(Math.random() * 3);
@@ -380,13 +389,8 @@
             this.x = WIDTH + 100; 
             this.y = GROUND_Y;
             
-            // 遊戲時間越長，障礙物最高能浮空的極限越大 (最多升高 150px)
             let maxElevation = Math.min((gameTime / 10) * 25, 150); 
-            
-            // 生存 5 秒後，障礙物有 40% ~ 70% 的機率浮空！
             if (gameTime > 5 && Math.random() < 0.4 + (gameTime * 0.005)) {
-                // 有些障礙物會飛得剛好在你頭上，你必須用「短跳」從下面鑽過去
-                // 有些會剛好卡在半腰，逼你必須用「極限長跳」跨過去
                 this.y -= Math.random() * maxElevation;
             }
         }
@@ -452,7 +456,7 @@
         frames++;
         gameTime = (Date.now() - startTime) / 1000;
         timerEl.innerText = gameTime.toFixed(1);
-        gameSpeed = Math.min(baseSpeed + (gameTime / 8) * 1.2, 19); // 加快極限速度
+        gameSpeed = Math.min(baseSpeed + (gameTime / 8) * 1.2, 19); 
 
         bgStars.forEach(star => star.update());
         player.update();
@@ -461,16 +465,12 @@
         if (frames % spawnInterval === 0) {
             obstacles.push(new Obstacle());
             
-            // 金幣陣型難度隨機生成
             if (Math.random() < 0.85) {
                 let pattern = Math.floor(Math.random() * 4); 
+                let heights = [GROUND_Y - 80, GROUND_Y - 160, GROUND_Y - 220];
                 
-                // 基礎高度池
-                let heights = [GROUND_Y - 80, GROUND_Y - 180, GROUND_Y - 260];
-                
-                // 💥 遊戲超過 15 秒後，解鎖超高空金幣 (需要極限長按才能碰到)
                 if (gameTime > 15) {
-                    heights.push(GROUND_Y - 350); 
+                    heights.push(GROUND_Y - 280); 
                 }
 
                 let baseY = heights[Math.floor(Math.random() * heights.length)];
@@ -487,8 +487,7 @@
                         coins.push(new Coin(startX + k * 50, arcY));
                     }
                 } else {
-                    // 💥 遊戲超過 20 秒，波浪起伏變得超大，逼迫玩家連續進行短跳+長跳
-                    let waveAmp = gameTime > 20 ? 150 : 80;
+                    let waveAmp = gameTime > 20 ? 120 : 70;
                     for (let k = 0; k < 5; k++) {
                         coins.push(new Coin(startX + k * 55, baseY + (k % 2 === 0 ? 0 : -waveAmp)));
                     }
@@ -496,7 +495,6 @@
             }
         }
 
-        // 碰撞偵測
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i]; obs.update();
             if (player.x + HITBOX_SHRINK < obs.x + obs.width - 10 &&
@@ -543,7 +541,14 @@
         bgStars.forEach(star => star.draw(bgCtx));
 
         drawParallaxLayer(ctx, layer2Img, 0.3, 0, HEIGHT - GROUND_H + 50);
-        drawParallaxLayer(ctx, layer3Img, 0.6, 0, HEIGHT - GROUND_H + 50);
+        
+        if (layer3Img.complete && layer3Img.height > 0) {
+            let l3Height = 1150;
+            let l3Y = GROUND_Y - l3Height + 50; 
+            drawParallaxLayer(ctx, layer3Img, 0.6, l3Y, l3Height);
+        } else {
+            drawParallaxLayer(ctx, layer3Img, 0.6, 0, HEIGHT - GROUND_H + 50);
+        }
 
         if (layer4Img.complete && layer4Img.width > 0) {
             drawParallaxLayer(ctx, layer4Img, 1.0, GROUND_Y, GROUND_H);
