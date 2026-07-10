@@ -92,8 +92,8 @@
         .highlight { color: var(--text-warning); font-weight: bold; font-size: 22px; }
         
         #result-tier-title { font-size: 20px; font-weight: bold; color: var(--text-danger); margin: 15px 0 10px 0; text-shadow: var(--text-shadow-neo); }
-        #result-img { width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 4px solid var(--bg-color); margin: 10px auto; display: block; background: var(--bg-color); box-shadow: var(--shadow-inset); padding: 5px; }
-        #ai-comment { font-style: normal; color: #7A8C9D; margin-top: 15px; min-height: 35px; font-size: 14px; padding: 10px; border-radius: 12px; box-shadow: var(--shadow-inset); background: rgba(255,255,255,0.1); }
+        #result-img {width: 130px; height: 130px; object-fit: cover; /*border-radius: 50%;  border: 4px solid var(--bg-color); margin: 10px auto; display: block; background: var(--bg-color); box-shadow: var(--shadow-inset); padding: 5px; */}
+        #ai-comment { font-style: normal; color: #7A8C9D; margin-top: 15px; min-height: 35px; font-size: 14px; padding: 10px; border-radius: 12px; box-shadow: var(--shadow-inset); background: rgba(255,255,255,0.1);}
 
         .btn-restart {
             margin-top: 20px; padding: 12px 35px; font-size: 18px; font-weight: bold;
@@ -205,7 +205,10 @@
 
     const GROUND_H = 180;
     const GROUND_Y = HEIGHT - GROUND_H;
-    const HITBOX_SHRINK = 10;
+    
+    // --- 替換這裡 ---
+    const HITBOX_SHRINK_X = 20; // 左右判定向內縮減 20 (原本是10，依照你的要求再減10)
+    const HITBOX_SHRINK_Y = 10; // 上下判定保持不變向內縮 10
 
     let gameState = 'ready';
     let score = 0, startTime = 0, gameTime = 0;
@@ -498,12 +501,16 @@
 
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i]; obs.update();
-            if (player.x + HITBOX_SHRINK < obs.x + obs.width - 10 &&
-                player.x + player.width - HITBOX_SHRINK > obs.x + 10 &&
-                player.y - player.height + HITBOX_SHRINK < obs.y &&
+            
+            // --- 替換這裡的碰撞判定邏輯 ---
+            if (player.x + HITBOX_SHRINK_X < obs.x + obs.width - 10 &&
+                player.x + player.width - HITBOX_SHRINK_X > obs.x + 10 &&
+                player.y - player.height + HITBOX_SHRINK_Y < obs.y &&
                 player.y > obs.y - obs.height + 10) {
                 triggerGameOver();
             }
+            // -----------------------------
+            
             if (obs.x + obs.width < 0) obstacles.splice(i, 1);
         }
 
