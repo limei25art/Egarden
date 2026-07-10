@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>E Garden</title>
     <style>
-        /* ==================== 新擬物風格顏色變數 ==================== */
+        /* ==================== 擬物風格顏色變數 ==================== */
         :root {
             --bg-color: #E0E5EC;
             --text-main: #5A6C7D;
@@ -45,9 +45,8 @@
         #footer a { text-decoration: none; transition: opacity 0.2s; }
         #footer a:hover { opacity: 0.7; }
 
-       #game-container {
+        #game-container {
             position: relative;
-            /* 已修改為淺藍色漸變 */
             background: linear-gradient(to bottom, #4ea9ed, #78c4fd);
             width: 100vw; height: calc(100vw * 16 / 9);
             max-height: 100vh; max-width: calc(100vh * 9 / 16);
@@ -92,8 +91,8 @@
         .highlight { color: var(--text-warning); font-weight: bold; font-size: 22px; }
         
         #result-tier-title { font-size: 20px; font-weight: bold; color: var(--text-danger); margin: 15px 0 10px 0; text-shadow: var(--text-shadow-neo); }
-        #result-img {width: 130px; height: 130px; object-fit: cover; /*border-radius: 50%;  border: 4px solid var(--bg-color); margin: 10px auto; display: block; background: var(--bg-color); box-shadow: var(--shadow-inset); padding: 5px; */}
-        #ai-comment { font-style: normal; color: #7A8C9D; margin-top: 15px; min-height: 35px; font-size: 14px; padding: 10px; border-radius: 12px; box-shadow: var(--shadow-inset); background: rgba(255,255,255,0.1);}
+        #result-img { width: 130px; height: 130px; object-fit: cover; display: block; margin: 10px auto; }
+        #ai-comment { font-style: normal; color: #7A8C9D; margin-top: 15px; min-height: 35px; font-size: 14px; padding: 10px; border-radius: 12px; box-shadow: var(--shadow-inset); background: rgba(255,255,255,0.1); }
 
         .btn-restart {
             margin-top: 20px; padding: 12px 35px; font-size: 18px; font-weight: bold;
@@ -170,7 +169,7 @@
             <p>收集金幣：<span id="finalScore" class="highlight">0</span></p>
             <p>奔跑時間：<span id="finalTime" class="highlight">0</span> 秒</p>
             <img id="result-img" src="" alt="冒險結果">
-            <p style="margin: 1px 0;"id="ai-comment">✨ 正在請 AI 評價你的表現...</p>
+            <p style="margin: 1px 0;" id="ai-comment">✨ 正在請 AI 評價你的表現...</p>
             <button class="btn-restart" id="btn-restart">再次挑戰</button>
         </div>
     </div>
@@ -206,9 +205,9 @@
     const GROUND_H = 180;
     const GROUND_Y = HEIGHT - GROUND_H;
     
-    // --- 替換這裡 ---
-    const HITBOX_SHRINK_X = 20; // 左右判定向內縮減 20 (原本是10，依照你的要求再減10)
-    const HITBOX_SHRINK_Y = 10; // 上下判定保持不變向內縮 10
+    // Hitbox 邊界縮減設定
+    const HITBOX_SHRINK_X = 20; 
+    const HITBOX_SHRINK_Y = 10; 
 
     let gameState = 'ready';
     let score = 0, startTime = 0, gameTime = 0;
@@ -216,7 +215,7 @@
     
     let obstacles = [], coins = [], particles = [];
     
-    // ================= 載入核心圖片 (支援3款障礙物) =================
+    // ================= 載入核心圖片 =================
     let playerSheet = new Image();
     let coinImg = new Image();
     
@@ -272,12 +271,12 @@
 
     let isPressing = false;
 
-    // ================= 角色：尺寸與 UV 切割更新 =================
+    // ================= 角色屬性與動畫切片 (對齊 1200*440) =================
     const player = {
         x: 100, 
         y: GROUND_Y, 
-        width: 132,    // 💥 更新為 132
-        height: 200,   // 💥 更新為 200
+        width: 132,    
+        height: 200,   
         vy: 0, 
         gravity: 1.3,      
         jumpPower: -26,    
@@ -322,11 +321,9 @@
                 ctx.fill(); ctx.restore(); return;
             }
             
-            // 💥 全新網格對齊法 (寬 132, 高 200)
             let sx = 0, sy = 0, sw = 132, sh = 200; 
             
             if (this.state === 'RUN') {
-                // 跑步動畫 8 幀：全都在第一排 (Y=0)
                 sx = this.animFrame * 132;
                 sy = 0;
             } else if (this.state === 'JUMP_UP') {
@@ -336,7 +333,6 @@
             } else if (this.state === 'LAND') {
                 sx = 264; sy = 200;
             } else {
-                // 預設/Idle
                 sx = 396; sy = 200;
             }
             
@@ -502,14 +498,13 @@
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i]; obs.update();
             
-            // --- 替換這裡的碰撞判定邏輯 ---
+            // 套用自訂高容錯率碰撞判定 
             if (player.x + HITBOX_SHRINK_X < obs.x + obs.width - 10 &&
                 player.x + player.width - HITBOX_SHRINK_X > obs.x + 10 &&
                 player.y - player.height + HITBOX_SHRINK_Y < obs.y &&
                 player.y > obs.y - obs.height + 10) {
                 triggerGameOver();
             }
-            // -----------------------------
             
             if (obs.x + obs.width < 0) obstacles.splice(i, 1);
         }
