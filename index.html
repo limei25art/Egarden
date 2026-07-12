@@ -236,11 +236,12 @@
     let layer3Img = new Image(); 
     let layer4Img = new Image(); 
     let layer5Img = new Image(); 
+    let eggImg = new Image(); // 新增彩蛋圖片對象
 
     let obstacleImgs = [new Image(), new Image(), new Image()];
 
     let imagesLoaded = 0;
-    const totalImages = 10; 
+    const totalImages = 11; // 總圖片數從 10 調整為 11
 
     function checkAllLoaded() {
         imagesLoaded++;
@@ -261,6 +262,7 @@
     layer3Img.src = "assets/layer3.png"; 
     layer4Img.src = "assets/layer4.png"; 
     layer5Img.src = "assets/layer5.png";
+    eggImg.src = "assets/egg.png"; // 設定彩蛋路徑
 
     playerSheet.onload = checkAllLoaded;
     coinImg.onload = checkAllLoaded;
@@ -270,6 +272,7 @@
     layer3Img.onload = checkAllLoaded;
     layer4Img.onload = checkAllLoaded;
     layer5Img.onload = checkAllLoaded;
+    eggImg.onload = checkAllLoaded;
 
     const resultTiers = [
         { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "哇！一個金幣都冇？你嚟散步定放風啊？耶耶！." },
@@ -282,6 +285,13 @@
     ];
 
     let isPressing = false;
+
+    // ================= 彩蛋狀態變數 =================
+    let eggSpawned = false;    // 確保每場遊戲只觸發一次
+    let isEggActive = false;   // 彩蛋目前是否正在捲動中
+    let eggX = -9999;          // 彩蛋目前 X 軸座標
+    const EGG_WIDTH = 1440;    // 彩蛋寬度
+    const EGG_HEIGHT = 292;    // 彩蛋高度
 
     // ================= 角色屬性與動畫切片 (對齊 1200*440) =================
     const player = {
@@ -475,7 +485,7 @@
         danmakus.push({
             text: selectedText,
             x: WIDTH + 30,
-            y: 580 + selectedLane * 75, 
+            y: 680 + selectedLane * 75, 
             lane: selectedLane,
             width: textWidth,
             speed: gameSpeed * (0.3 + Math.random() * 0.3)
@@ -503,6 +513,19 @@
 
         bgStars.forEach(star => star.update());
         player.update();
+
+        // 偵測並更新彩蛋觸發與滾動位置
+        if (!eggSpawned && score >= 120) {
+            eggSpawned = true;
+            isEggActive = true;
+            eggX = WIDTH; // 從畫面右側外部切入
+        }
+        if (isEggActive) {
+            eggX -= gameSpeed * 0.6; // 與 layer3 捲軸速度完全同步 (0.6倍速)
+            if (eggX + EGG_WIDTH < 0) {
+                isEggActive = false; // 滾出左側畫面後關閉
+            }
+        }
 
         if (score >= 20) {
             for (let i = danmakus.length - 1; i >= 0; i--) {
@@ -600,12 +623,17 @@
 
         drawParallaxLayer(ctx, layer2Img, 0.3, 0, HEIGHT - GROUND_H + 50);
         
+        let l3Height = 292;
+        let l3Y = GROUND_Y - l3Height + 50; 
         if (layer3Img.complete && layer3Img.height > 0) {
-            let l3Height = 1150;
-            let l3Y = GROUND_Y - l3Height + 50; 
             drawParallaxLayer(ctx, layer3Img, 0.6, l3Y, l3Height);
         } else {
             drawParallaxLayer(ctx, layer3Img, 0.6, 0, HEIGHT - GROUND_H + 50);
+        }
+
+        // ================= 繪製彩蛋機制 (同層、同Y軸座標、不拼貼單次出現) =================
+        if (isEggActive && eggImg.complete) {
+            ctx.drawImage(eggImg, eggX, l3Y, EGG_WIDTH, EGG_HEIGHT);
         }
 
         if (score >= 20) {
@@ -659,7 +687,14 @@
     function resetGame() {
         popup.style.display = 'none'; player.y = GROUND_Y; player.vy = 0; player.isJumping = false;
         obstacles = []; coins = []; particles = []; danmakus = []; score = 0; scoreEl.innerText = '0';
-        frames = 0; gameState = 'ready'; startPrompt.style.display = 'block'; renderScene();
+        frames = 0; gameState = 'ready'; startPrompt.style.display = 'block'; 
+        
+        // 重新開始時重置彩蛋狀態
+        eggSpawned = false; 
+        isEggActive = false; 
+        eggX = -9999; 
+        
+        renderScene();
     }
 
     btnRestart.addEventListener('click', resetGame);
