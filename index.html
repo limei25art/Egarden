@@ -10,10 +10,10 @@
     <meta name="author" content="li_mei.art">
     <meta name="robots" content="index,follow">
 
-    <meta property="og:title" content="ED Dress Up">
+    <meta property="og:title" content="E Garden">
     <meta property="og:description" content="EDAN LUI, MIRROR, 揀選服飾, E Garden ,全世界爵屎心肝椗">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://limei25art.github.io/EGarden/">
+    <meta property="og:url" content="https://limei25art.github.io/Egarden/">
     <meta property="og:image" content="https://limei25art.github.io/Egarden/og.jpg">
     
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
@@ -123,7 +123,7 @@
         .btn-restart:active { transform: scale(0.98); box-shadow: var(--shadow-inset); color: var(--text-main); }
 
         #start-prompt {
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 22px; font-weight: bold; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
             text-align: center; pointer-events: none; z-index: 10;
         }
@@ -165,7 +165,7 @@
     </div>
     
     <div id="start-prompt">
-        <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #b8860b; margin-bottom: 20px;">E Garden</div>
+        <div style="font-size: 32px; color: #FFD700; text-shadow: 2px 2px 0px #b8860b; margin-bottom: 20px;">🌼E Garden🌼</div>
         <div>點擊螢幕 開始冒險</div>
         <div style="font-size: 14px; margin-top: 8px; color: #ffe0b2;">短按=小跳 | 長按=大跳！</div>
     </div>
@@ -184,8 +184,8 @@
     <div id="popup">
         <div class="popup-content">
             <h2>冒險結果</h2>
-            <p>收集花花：<span id="finalScore" class="highlight">0</span></p>
-            <p>奔跑時間：<span id="finalTime" class="highlight">0</span> 秒</p>
+            <p>收集花花🌼：<span id="finalScore" class="highlight">0</span></p>
+            <p>奔跑時間⏱️：<span id="finalTime" class="highlight">0</span> 秒</p>
             <img id="result-img" src="" alt="冒險結果">
             <p style="margin: 1px 0;" id="ai-comment">✨ 正在請 AI 評價你的表現...</p>
             <button class="btn-restart" id="btn-restart">再次挑戰</button>
@@ -239,10 +239,10 @@
     // ================= 彈幕資源定義 =================
     let danmakus = [];
     const danmakuTexts = [
-        "呂爵安世界第一", "就隨便耶耶", "重寫耶耶", "提醒 我是個垃圾", "壞人一個",
+        "呂爵安世界第一", "就隨便耶耶 填寫耶耶", "✧ 大家要Play住YouTube玩 ദ്ദി(˵ •̀ ᴗ - ˵ )✧", "Always on your side Always by your side", "壞人一個",
         "深呼吸 去賣傻", "荒誕故事 進步為你起", " I’ll never let you stay alone", "I I I just for you", "全人類活該 識得愛 是愛",
         "才能令你快樂 重視和需要", "One two three four five six seven eight", "Running and Run", "任我 怎去衝 怎去闖 都折返 那樽頸", "你若是愛我⋯",
-        "你與真相恐怕差百千萬里", "I know You know I know~~", "傻西瓜(╯°Д°）╯︵ /(.□ . \)", "你咁似啲傻西瓜haters duck ng duck ga(˶‾᷄ ⁻̫ ‾᷅˵)🍉"
+        "你與真相恐怕差百千萬里", "I know You know I know~~", "傻西瓜(╯°Д°）╯︵ /(.□ . \)", "你咁似啲傻西瓜haters duck ng duck ga(˶‾᷄ ⁻̫ ‾᷅˵)🍉", "繼續再浪漫 再累都不怕"
     ];
 
     // ================= 載入核心圖片 =================
@@ -293,13 +293,13 @@
     eggImg.onload = checkAllLoaded;
 
     const resultTiers = [
-        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "哇！一個花花都冇？你嚟散步定放風啊？耶耶！." },
+        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "哇！一個花花都冇？你嚟散步啊？耶耶！." },
         { min: 1, max: 5, title: "🥉 初試身手 🥉", img: "assets/result_1.png", comment: "仆... 唔係，仆親之後仲可以翻身！加油耶耶！" },
-        { min: 6, max: 15, title: "🥈 尋寶能手 🥈", img: "assets/result_2.png", comment: "好耶耶！開始有feel喇！繼續！！" },
-        { min: 16, max: 30, title: "🥇 花花收割者 🥇", img: "assets/result_3.png", comment: "唔錯唔錯！開始跟到我節奏咁叻仔！" },
-        { min: 31, max: 50, title: "💎 大富大貴 💎", img: "assets/result_4.png", comment: "太犀利啦大佬！你係咪偷偷練過㗎？！" },
+        { min: 6, max: 15, title: "🥈 尋寶能手 🥈", img: "assets/result_2.png", comment: "好耶耶！開始有feel喇！繼續耶耶！！" },
+        { min: 16, max: 30, title: "🥇 花花收割者 🥇", img: "assets/result_3.png", comment: "唔錯唔錯！開始跟到我節奏咁叻仔耶耶！" },
+        { min: 31, max: 50, title: "💎 大富大貴 💎", img: "assets/result_4.png", comment: "太犀利啦大佬耶耶！你係咪偷偷練過㗎？！" },
         { min: 51, max: 99, title: "👑 富可敵國 👑", img: "assets/result_5.png", comment: "哇！身手敏捷到我眼花耶耶！！" },
-        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "Sooo Crazyyyyy 去到E個分數，你十分之有耐性！" }
+        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "Sooo Crazyyyyy 去到E個分數，你十分之有耐性耶耶！" }
     ];
 
     let isPressing = false;
@@ -425,11 +425,13 @@
     class Obstacle {
         constructor() {
             this.imgType = Math.floor(Math.random() * 3);
-            this.width = 80; this.height = 100;
-            this.x = WIDTH + 100; 
-            this.y = GROUND_Y;
-            
-            let maxElevation = Math.min((gameTime / 10) * 25, 150); 
+            // 1. 將障礙物本身的基礎高度降低 (例如從 100 改為 70)
+this.width = 80; this.height = 100;
+this.x = WIDTH + 100; 
+this.y = GROUND_Y;
+
+// 2. 降低障礙物懸浮的最大高度限制，從 150 大幅降至 60，並減緩浮空上升的倍率
+let maxElevation = Math.min((gameTime / 10) * 15, 60);
             if (gameTime > 5 && Math.random() < 0.4 + (gameTime * 0.005)) {
                 this.y -= Math.random() * maxElevation;
             }
@@ -526,12 +528,12 @@
         frames++;
         gameTime = (Date.now() - startTime) / 1000;
         timerEl.innerText = gameTime.toFixed(1);
-        gameSpeed = Math.min(baseSpeed + (gameTime / 8) * 1.2, 19); 
+        gameSpeed = Math.min(baseSpeed + (gameTime / 10) * 1.1, 19);
 
         bgStars.forEach(star => star.update());
         player.update();
 
-        if (!eggSpawned && score >= 120) {
+        if (!eggSpawned && score >= 121) {
             eggSpawned = true;
             isEggActive = true;
             eggX = WIDTH; 
