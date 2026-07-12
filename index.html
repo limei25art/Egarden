@@ -205,9 +205,12 @@
     const GROUND_H = 180;
     const GROUND_Y = HEIGHT - GROUND_H;
     
-    // Hitbox 邊界縮減設定
-    const HITBOX_SHRINK_X = 20; 
-    const HITBOX_SHRINK_Y = 10; 
+    // ================= Hitbox 邊界縮減設定 =================
+    const HITBOX_SHRINK_X = 20;  // 主角左右縮減
+    const HITBOX_SHRINK_Y = 10;  // 主角上下縮減
+    
+    const OBS_SHRINK_X = 20;     // 障礙物左右縮減 (-20)
+    const OBS_SHRINK_Y = 20;     // 障礙物上下縮減 (-20)
 
     let gameState = 'ready';
     let score = 0, startTime = 0, gameTime = 0;
@@ -215,6 +218,15 @@
     
     let obstacles = [], coins = [], particles = [];
     
+    // ================= 彈幕資源定義 =================
+    let danmakus = [];
+    const danmakuTexts = [
+        "呂爵安世界第一", "就隨便耶耶", "重寫耶耶", "提醒 我是個垃圾", "壞人一個",
+        "深呼吸 去賣傻", "荒誕故事 進步為你起", " I’ll never let you stay alone", "I I I just for you", "全人類活該 識得愛 是愛",
+        "才能令你快樂 重視和需要", "One two three four five six seven eight", "Running and Run", "任我 怎去衝 怎去闖 都折返 那樽頸", "你若是愛我⋯",
+        "你與真相恐怕差百千萬里", "I know You know I know~~", "傻西瓜(╯°Д°）╯︵ /(.□ . \)，", "你咁似啲傻西瓜haters duck ng duck ga(˶‾᷄ ⁻̫ ‾᷅˵)🍉"
+    ];
+
     // ================= 載入核心圖片 =================
     let playerSheet = new Image();
     let coinImg = new Image();
@@ -439,6 +451,37 @@
         }
     }
 
+    // ================= 建立新彈幕函數 =================
+    function spawnDanmaku() {
+        let maxDanmakuAllowed = score >= 60 ? 3 : (score >= 40 ? 2 : 1);
+        if (danmakus.length >= maxDanmakuAllowed) return;
+
+        let currentTexts = danmakus.map(d => d.text);
+        let availableTexts = danmakuTexts.filter(t => !currentTexts.includes(t));
+        if (availableTexts.length === 0) return;
+
+        let currentLanes = danmakus.map(d => d.lane);
+        let availableLanes = [0, 1, 2].filter(l => !currentLanes.includes(l));
+        if (availableLanes.length === 0) return;
+
+        let selectedText = availableTexts[Math.floor(Math.random() * availableTexts.length)];
+        let selectedLane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+
+        ctx.save();
+        ctx.font = "bold 28px 'Segoe UI', sans-serif";
+        let textWidth = ctx.measureText(selectedText).width;
+        ctx.restore();
+
+        danmakus.push({
+            text: selectedText,
+            x: WIDTH + 30,
+            y: 580 + selectedLane * 75, 
+            lane: selectedLane,
+            width: textWidth,
+            speed: gameSpeed * (0.3 + Math.random() * 0.3)
+        });
+    }
+
     function triggerCSSScorePopup(canvasX, canvasY) {
         const scaleX = gameContainer.clientWidth / WIDTH;
         const scaleY = gameContainer.clientHeight / HEIGHT;
@@ -460,6 +503,18 @@
 
         bgStars.forEach(star => star.update());
         player.update();
+
+        if (score >= 20) {
+            for (let i = danmakus.length - 1; i >= 0; i--) {
+                danmakus[i].x -= danmakus[i].speed;
+                if (danmakus[i].x + danmakus[i].width < 0) {
+                    danmakus.splice(i, 1);
+                }
+            }
+            if (frames % 35 === 0 && Math.random() < (score >= 60 ? 0.8 : 0.4)) {
+                spawnDanmaku();
+            }
+        }
 
         let spawnInterval = Math.max(55, 120 - Math.floor(gameSpeed * 2.8));
         if (frames % spawnInterval === 0) {
@@ -498,11 +553,11 @@
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i]; obs.update();
             
-            // 套用自訂高容錯率碰撞判定 
-            if (player.x + HITBOX_SHRINK_X < obs.x + obs.width - 10 &&
-                player.x + player.width - HITBOX_SHRINK_X > obs.x + 10 &&
+            // 精準套用自訂判定：主角自帶縮減(20, 10)，障礙物邊界扣除(20, 20)
+            if (player.x + HITBOX_SHRINK_X < obs.x + obs.width - OBS_SHRINK_X &&
+                player.x + player.width - HITBOX_SHRINK_X > obs.x + OBS_SHRINK_X &&
                 player.y - player.height + HITBOX_SHRINK_Y < obs.y &&
-                player.y > obs.y - obs.height + 10) {
+                player.y > obs.y - obs.height + OBS_SHRINK_Y) {
                 triggerGameOver();
             }
             
@@ -553,6 +608,20 @@
             drawParallaxLayer(ctx, layer3Img, 0.6, 0, HEIGHT - GROUND_H + 50);
         }
 
+        if (score >= 20) {
+            ctx.save();
+            ctx.font = "bold 28px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            ctx.fillStyle = "#ffffff";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            danmakus.forEach(d => {
+                ctx.fillText(d.text, d.x, d.y);
+            });
+            ctx.restore();
+        }
+
         if (layer4Img.complete && layer4Img.width > 0) {
             drawParallaxLayer(ctx, layer4Img, 1.0, GROUND_Y, GROUND_H);
         } else {
@@ -589,7 +658,7 @@
 
     function resetGame() {
         popup.style.display = 'none'; player.y = GROUND_Y; player.vy = 0; player.isJumping = false;
-        obstacles = []; coins = []; particles = []; score = 0; scoreEl.innerText = '0';
+        obstacles = []; coins = []; particles = []; danmakus = []; score = 0; scoreEl.innerText = '0';
         frames = 0; gameState = 'ready'; startPrompt.style.display = 'block'; renderScene();
     }
 
