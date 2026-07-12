@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>E Garden</title>
+
+    <meta name="description" content="網站摘要簡介。">
+    <meta name="keywords" content="E Garden, EDAN LUI, MIRROR, 全世界爵屎心肝椗">
+    <meta name="author" content="li_mei.art">
+    <meta name="robots" content="index,follow">
+
+    <meta property="og:title" content="ED Dress Up">
+    <meta property="og:description" content="EDAN LUI, MIRROR, 揀選服飾, E Garden ,全世界爵屎心肝椗">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://limei25art.github.io/EGarden/">
+    <meta property="og:image" content="https://limei25art.github.io/Egarden/og.jpg">
+    
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Egarden" />
+    <link rel="manifest" href="favicon/site.webmanifest" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         /* ==================== 擬物風格顏色變數 ==================== */
         :root {
@@ -90,7 +110,6 @@
         p { font-size: 16px; margin: 10px 0; color: var(--text-main); text-shadow: var(--text-shadow-neo); }
         .highlight { color: var(--text-warning); font-weight: bold; font-size: 22px; }
         
-        #result-tier-title { font-size: 20px; font-weight: bold; color: var(--text-danger); margin: 15px 0 10px 0; text-shadow: var(--text-shadow-neo); }
         #result-img { width: 130px; height: 130px; object-fit: cover; display: block; margin: 10px auto; }
         #ai-comment { font-style: normal; color: #7A8C9D; margin-top: 15px; min-height: 35px; font-size: 14px; padding: 10px; border-radius: 12px; box-shadow: var(--shadow-inset); background: rgba(255,255,255,0.1); }
 
@@ -141,7 +160,7 @@
 
 <div id="game-container">
     <div id="ui">
-        <div>🪙 GOLD: <span id="score" style="display:inline-block; transition: all 0.1s;">0</span></div>
+        <div>🌼 FLOWER: <span id="score" style="display:inline-block; transition: all 0.1s;">0</span></div>
         <div>⏱️ TIME: <span id="timer">0.0</span>s</div>
     </div>
     
@@ -165,8 +184,7 @@
     <div id="popup">
         <div class="popup-content">
             <h2>冒險結果</h2>
-            <div id="result-tier-title">🔹 稱號載入中 🔹</div>
-            <p>收集金幣：<span id="finalScore" class="highlight">0</span></p>
+            <p>收集花花：<span id="finalScore" class="highlight">0</span></p>
             <p>奔跑時間：<span id="finalTime" class="highlight">0</span> 秒</p>
             <img id="result-img" src="" alt="冒險結果">
             <p style="margin: 1px 0;" id="ai-comment">✨ 正在請 AI 評價你的表現...</p>
@@ -180,7 +198,7 @@
     <span><a href="https://youtube.com/@edanlui7556?si=HW7jHFwUIiw4ibNb" target="_blank" style="color: #ffffff;">E YOUTUBE</a></span> |
     <span><a href="https://www.threads.com/@edanlui" target="_blank" style="color: #ffffff;">E Threads</a></span> |
     <span><a href="https://www.instagram.com/edanlui" target="_blank" style="color: #ffffff">E IG</a></span> 
-    <h5 style="margin: 0px 0;"><a href="https://linktr.ee/li_mei25" target="_blank" style="color: #ffffff;">UNOFFICIA.FANART BY LI_MEI.ART</a></h5>
+    <h5 style="margin: 0px 0;"><a href="https://linktr.ee/li_mei.art" target="_blank" style="color: #ffffff;">UNOFFICIA.FANART BY LI_MEI.ART</a></h5>
 </div>
 
 <script>
@@ -224,7 +242,7 @@
         "呂爵安世界第一", "就隨便耶耶", "重寫耶耶", "提醒 我是個垃圾", "壞人一個",
         "深呼吸 去賣傻", "荒誕故事 進步為你起", " I’ll never let you stay alone", "I I I just for you", "全人類活該 識得愛 是愛",
         "才能令你快樂 重視和需要", "One two three four five six seven eight", "Running and Run", "任我 怎去衝 怎去闖 都折返 那樽頸", "你若是愛我⋯",
-        "你與真相恐怕差百千萬里", "I know You know I know~~", "傻西瓜(╯°Д°）╯︵ /(.□ . \)，", "你咁似啲傻西瓜haters duck ng duck ga(˶‾᷄ ⁻̫ ‾᷅˵)🍉"
+        "你與真相恐怕差百千萬里", "I know You know I know~~", "傻西瓜(╯°Д°）╯︵ /(.□ . \)", "你咁似啲傻西瓜haters duck ng duck ga(˶‾᷄ ⁻̫ ‾᷅˵)🍉"
     ];
 
     // ================= 載入核心圖片 =================
@@ -236,12 +254,12 @@
     let layer3Img = new Image(); 
     let layer4Img = new Image(); 
     let layer5Img = new Image(); 
-    let eggImg = new Image(); // 新增彩蛋圖片對象
+    let eggImg = new Image(); 
 
     let obstacleImgs = [new Image(), new Image(), new Image()];
 
     let imagesLoaded = 0;
-    const totalImages = 11; // 總圖片數從 10 調整為 11
+    const totalImages = 11; 
 
     function checkAllLoaded() {
         imagesLoaded++;
@@ -262,7 +280,7 @@
     layer3Img.src = "assets/layer3.png"; 
     layer4Img.src = "assets/layer4.png"; 
     layer5Img.src = "assets/layer5.png";
-    eggImg.src = "assets/egg.png"; // 設定彩蛋路徑
+    eggImg.src = "assets/egg.png"; 
 
     playerSheet.onload = checkAllLoaded;
     coinImg.onload = checkAllLoaded;
@@ -275,25 +293,25 @@
     eggImg.onload = checkAllLoaded;
 
     const resultTiers = [
-        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "哇！一個金幣都冇？你嚟散步定放風啊？耶耶！." },
+        { min: 0, max: 0, title: "🍂 空手而回 🍂", img: "assets/result_0.png", comment: "哇！一個花花都冇？你嚟散步定放風啊？耶耶！." },
         { min: 1, max: 5, title: "🥉 初試身手 🥉", img: "assets/result_1.png", comment: "仆... 唔係，仆親之後仲可以翻身！加油耶耶！" },
         { min: 6, max: 15, title: "🥈 尋寶能手 🥈", img: "assets/result_2.png", comment: "好耶耶！開始有feel喇！繼續！！" },
-        { min: 16, max: 30, title: "🥇 金幣收割者 🥇", img: "assets/result_3.png", comment: "唔錯唔錯！開始跟到我節奏咁叻仔！" },
+        { min: 16, max: 30, title: "🥇 花花收割者 🥇", img: "assets/result_3.png", comment: "唔錯唔錯！開始跟到我節奏咁叻仔！" },
         { min: 31, max: 50, title: "💎 大富大貴 💎", img: "assets/result_4.png", comment: "太犀利啦大佬！你係咪偷偷練過㗎？！" },
         { min: 51, max: 99, title: "👑 富可敵國 👑", img: "assets/result_5.png", comment: "哇！身手敏捷到我眼花耶耶！！" },
-        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "Sooo Crazyyyyy 去到E個分數，你十分之有耐性力！" }
+        { min: 100, max: Infinity, title: "✨ 傳奇終結者 ✨", img: "assets/result_6.png", comment: "Sooo Crazyyyyy 去到E個分數，你十分之有耐性！" }
     ];
 
     let isPressing = false;
 
     // ================= 彩蛋狀態變數 =================
-    let eggSpawned = false;    // 確保每場遊戲只觸發一次
-    let isEggActive = false;   // 彩蛋目前是否正在捲動中
-    let eggX = -9999;          // 彩蛋目前 X 軸座標
-    const EGG_WIDTH = 1440;    // 彩蛋寬度
-    const EGG_HEIGHT = 292;    // 彩蛋高度
+    let eggSpawned = false;    
+    let isEggActive = false;   
+    let eggX = -9999;          
+    const EGG_WIDTH = 1440;    
+    const EGG_HEIGHT = 292;    
 
-    // ================= 角色屬性與動畫切片 (對齊 1200*440) =================
+    // ================= 角色屬性與動畫切片 =================
     const player = {
         x: 100, 
         y: GROUND_Y, 
@@ -461,7 +479,6 @@
         }
     }
 
-    // ================= 建立新彈幕函數 =================
     function spawnDanmaku() {
         let maxDanmakuAllowed = score >= 60 ? 3 : (score >= 40 ? 2 : 1);
         if (danmakus.length >= maxDanmakuAllowed) return;
@@ -514,16 +531,15 @@
         bgStars.forEach(star => star.update());
         player.update();
 
-        // 偵測並更新彩蛋觸發與滾動位置
         if (!eggSpawned && score >= 120) {
             eggSpawned = true;
             isEggActive = true;
-            eggX = WIDTH; // 從畫面右側外部切入
+            eggX = WIDTH; 
         }
         if (isEggActive) {
-            eggX -= gameSpeed * 0.6; // 與 layer3 捲軸速度完全同步 (0.6倍速)
+            eggX -= gameSpeed * 0.6; 
             if (eggX + EGG_WIDTH < 0) {
-                isEggActive = false; // 滾出左側畫面後關閉
+                isEggActive = false; 
             }
         }
 
@@ -576,7 +592,6 @@
         for (let i = obstacles.length - 1; i >= 0; i--) {
             let obs = obstacles[i]; obs.update();
             
-            // 精準套用自訂判定：主角自帶縮減(20, 10)，障礙物邊界扣除(20, 20)
             if (player.x + HITBOX_SHRINK_X < obs.x + obs.width - OBS_SHRINK_X &&
                 player.x + player.width - HITBOX_SHRINK_X > obs.x + OBS_SHRINK_X &&
                 player.y - player.height + HITBOX_SHRINK_Y < obs.y &&
@@ -631,7 +646,6 @@
             drawParallaxLayer(ctx, layer3Img, 0.6, 0, HEIGHT - GROUND_H + 50);
         }
 
-        // ================= 繪製彩蛋機制 (同層、同Y軸座標、不拼貼單次出現) =================
         if (isEggActive && eggImg.complete) {
             ctx.drawImage(eggImg, eggX, l3Y, EGG_WIDTH, EGG_HEIGHT);
         }
@@ -674,7 +688,6 @@
         let matchedTier = resultTiers[0];
         for (const tier of resultTiers) { if (score >= tier.min && score <= tier.max) { matchedTier = tier; break; } }
 
-        document.getElementById('result-tier-title').innerText = matchedTier.title;
         document.getElementById('result-img').src = matchedTier.img;
         document.getElementById('finalScore').innerText = score;
         document.getElementById('finalTime').innerText = gameTime.toFixed(1);
@@ -689,7 +702,6 @@
         obstacles = []; coins = []; particles = []; danmakus = []; score = 0; scoreEl.innerText = '0';
         frames = 0; gameState = 'ready'; startPrompt.style.display = 'block'; 
         
-        // 重新開始時重置彩蛋狀態
         eggSpawned = false; 
         isEggActive = false; 
         eggX = -9999; 
