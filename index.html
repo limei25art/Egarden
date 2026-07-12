@@ -305,11 +305,11 @@
     let isPressing = false;
 
     // ================= 彩蛋狀態變數 =================
-    let eggSpawned = false;    
-    let isEggActive = false;   
-    let eggX = -9999;          
-    const EGG_WIDTH = 1440;    
-    const EGG_HEIGHT = 292;    
+let isEggActive = false;   
+let eggX = -9999;          
+const EGG_WIDTH = 1440;    
+const EGG_HEIGHT = 292;  
+let nextEggScore = 121;    // 預設第一次出現的分數 (你可以隨意更改起點)
 
     // ================= 角色屬性與動畫切片 =================
     const player = {
@@ -533,17 +533,19 @@ let maxElevation = Math.min((gameTime / 10) * 15, 60);
         bgStars.forEach(star => star.update());
         player.update();
 
-        if (!eggSpawned && score >= 121) {
-            eggSpawned = true;
-            isEggActive = true;
-            eggX = WIDTH; 
-        }
-        if (isEggActive) {
-            eggX -= gameSpeed * 0.6; 
-            if (eggX + EGG_WIDTH < 0) {
-                isEggActive = false; 
-            }
-        }
+        // 當分數達到目標，而且畫面中目前沒有彩蛋時，就召喚彩蛋
+if (score >= nextEggScore && !isEggActive) {
+    isEggActive = true;
+    eggX = WIDTH; 
+    nextEggScore += 80; // 設定下一次出現的目標分數 (+80)
+}
+
+if (isEggActive) {
+    eggX -= gameSpeed * 0.6; 
+    if (eggX + EGG_WIDTH < 0) {
+        isEggActive = false; 
+    }
+}
 
         if (score >= 20) {
             for (let i = danmakus.length - 1; i >= 0; i--) {
@@ -700,16 +702,16 @@ let maxElevation = Math.min((gameTime / 10) * 15, 60);
     }
 
     function resetGame() {
-        popup.style.display = 'none'; player.y = GROUND_Y; player.vy = 0; player.isJumping = false;
-        obstacles = []; coins = []; particles = []; danmakus = []; score = 0; scoreEl.innerText = '0';
-        frames = 0; gameState = 'ready'; startPrompt.style.display = 'block'; 
-        
-        eggSpawned = false; 
-        isEggActive = false; 
-        eggX = -9999; 
-        
-        renderScene();
-    }
+    popup.style.display = 'none'; player.y = GROUND_Y; player.vy = 0; player.isJumping = false;
+    obstacles = []; coins = []; particles = []; danmakus = []; score = 0; scoreEl.innerText = '0';
+    frames = 0; gameState = 'ready'; startPrompt.style.display = 'block'; 
+    
+    isEggActive = false; 
+    eggX = -9999; 
+    nextEggScore = 121; // 重新開始時，將目標分數重置回第一次出現的分數
+    
+    renderScene();
+}
 
     btnRestart.addEventListener('click', resetGame);
     renderScene();
