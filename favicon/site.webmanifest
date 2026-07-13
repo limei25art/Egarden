@@ -1,6 +1,6 @@
 {
-  "name": "ED Dress Up",
-  "short_name": "EDress",
+  "name": "E garden",
+  "short_name": "E garden",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#0099cc",
+  "background_color": "#0099cc",
   "display": "standalone"
 }
